@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/nycae/azerothcore-operator/api/v1alpha1"
+	"github.com/nycae/azerothcore-operator/pkg/account"
 	"github.com/nycae/azerothcore-operator/pkg/realm"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -22,6 +23,8 @@ func init() {
 	scheme.AddKnownTypes(GroupVersion,
 		&v1alpha1.AzerothRealm{},
 		&v1alpha1.AzerothRealmList{},
+		&v1alpha1.Account{},
+		&v1alpha1.AccountList{},
 	)
 	metav1GroupVersion := schema.GroupVersion{Group: "nycae.io", Version: "v1alpha1"}
 	scheme.AddKnownTypes(metav1GroupVersion, &v1alpha1.AzerothRealm{})
@@ -35,7 +38,12 @@ func main() {
 		log.Fatalf("unable to start manager: %v", err)
 	}
 
-	if err = (&realm.AzerothRealmReconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme()}).
+	if err = (&realm.Reconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme()}).
+		SetupWithManager(mgr); err != nil {
+		log.Fatalf("unable to setup realm controller: %v", err)
+	}
+
+	if err = (&account.Reconciler{Client: mgr.GetClient(), Scheme: mgr.GetScheme(), Repo: account.NewRepository()}).
 		SetupWithManager(mgr); err != nil {
 		log.Fatalf("unable to setup realm controller: %v", err)
 	}

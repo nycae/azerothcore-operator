@@ -1,0 +1,82 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: accounts.azerothcore.io
+spec:
+  group: azerothcore.io
+  names:
+    plural: accounts
+    singular: account
+    kind: Account
+    shortNames:
+      - acc
+  scope: Cluster
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+      - name: Username
+        type: string
+        jsonPath: .spec.username
+      - name: GM-Level
+        type: integer
+        jsonPath: .spec.gmLevel
+      - name: Status
+        type: string
+        jsonPath: .status.phase
+      - name: Age
+        type: date
+        jsonPath: .metadata.creationTimestamp
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required:
+              - username
+              - passwordSecretRef
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 16
+                passwordSecretRef:
+                  type: object
+                  description: Reference to the secret storing the password
+                  required:
+                  - name
+                  - key
+                  properties:
+                    name:
+                      type: string
+                    key:
+                      type: string
+                email:
+                  type: string
+                  format: email
+                gmLevel:
+                  type: integer
+                  minimum: 0
+                  maximum: 4
+                  default: 0
+                  description: "0: Player, 1: Moderator, 2: Gamemaster, 3: Admin, 4: Console"
+                expansion:
+                  type: integer
+                  minimum: 0
+                  maximum: 2
+                  default: 2
+                  description: "0: Classic, 1: TBC, 2: WotLK"
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                  example: "Created"
+                accountId:
+                  type: integer
+                message:
+                  type: string

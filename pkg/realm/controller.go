@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/nycae/azerothcore-operator/api/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,16 +13,14 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-
-	"github.com/nycae/azerothcore-operator/api/v1alpha1"
 )
 
-type AzerothRealmReconciler struct {
+type Reconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
 
-func (r *AzerothRealmReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	realm := &v1alpha1.AzerothRealm{}
 	if err := r.Get(ctx, req.NamespacedName, realm); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -68,7 +67,7 @@ func (r *AzerothRealmReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	return ctrl.Result{}, nil
 }
 
-func (r *AzerothRealmReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.AzerothRealm{}).
 		Owns(&appsv1.Deployment{}).

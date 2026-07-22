@@ -24,27 +24,17 @@ const (
 	ServerTypeRpPvP ServerType = "RpPvP"
 )
 
-type DatabaseSpec struct {
-	Strategy          DatabaseStrategy `json:"strategy"`
-	Host              string           `json:"host,omitempty"`
-	Port              int32            `json:"port,omitempty"`
-	User              string           `json:"user,omitempty"`
-	Password          string           `json:"password,omitempty"`
-	CredentialsSecret string           `json:"credentialsSecret,omitempty"`
-	CertSecret        string           `json:"certSecret,omitempty"`
-}
-
 type WorldServerSpec struct {
 	MaxPlayers int32                       `json:"maxPlayers,omitempty"`
 	Resources  corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 type AzerothRealmSpec struct {
-	RealmType   ServerType      `json:"realmType"`
-	Expansion   string          `json:"expansion"`
-	Replicas    *int32          `json:"replicas,omitempty"`
-	Database    DatabaseSpec    `json:"database"`
-	WorldServer WorldServerSpec `json:"worldServer,omitempty"`
+	RealmType   ServerType       `json:"realmType"`
+	Expansion   string           `json:"expansion"`
+	Replicas    *int32           `json:"replicas,omitempty"`
+	Database    DatabaseStrategy `json:"database"`
+	WorldServer WorldServerSpec  `json:"worldServer,omitempty"`
 }
 
 type AzerothRealmStatus struct {
