@@ -1,0 +1,22 @@
+operator:
+  image:
+    repository: nginx:alpine
+    tag: latest
+    pullPolicy: IfNotPresent
+database:
+  enabled: true
+  auth:
+    username: "azcore"
+    password: "{{ randAlphaNum 24 }}"
+  primary:
+    persistence:
+      enabled: true
+      size: 120Gi
+authServer:
+  replicaCount: 1
+  image:
+    repository: acore/ac-wotlk-authserver
+    tag: master
+    pullPolicy: IfNotPresent
+  service:
+    port: 3724

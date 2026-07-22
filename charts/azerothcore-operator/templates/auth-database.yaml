@@ -1,0 +1,80 @@
+{{- if .Values.database.enabled }}
+
+{{- $secretName := printf "%s-mysql-secret" .Release.Name -}}
+{{- $existingSecret := lookup "v1" "Secret" .Release.Namespace $secretName -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $secretName }}
+  labels:
+    app: {{ .Release.Name }}-mysql
+type: Opaque
+data:
+  mysql-password: {{ if $existingSecret }}{{ index $existingSecret.data "mysql-password" }}{{ else }}{{ tpl .Values.database.auth.password . | b64enc | quote }}{{ end }}
+  mysql-root-password: {{ if $existingSecret }}{{ index $existingSecret.data "mysql-root-password" }}{{ else }}{{ randAlphaNum 24 | b64enc | quote }}{{ end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-mysql
+  labels:
+    app: {{ .Release.Name }}-mysql
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3306
+    name: mysql
+  selector:
+    app: {{ .Release.Name }}-mysql
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-mysql
+  labels:
+    app: {{ .Release.Name }}-mysql
+spec:
+  serviceName: {{ .Release.Name }}-mysql
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-mysql
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          ports:
+            - containerPort: 3306
+              name: mysql
+          env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-mysql-secret
+                key: mysql-root-password
+          - name: MYSQL_USER
+            value: {{ .Values.database.auth.username | quote }}
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-mysql-secret
+                key: mysql-password
+          {{- if .Values.database.primary.persistence.enabled }}
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+          {{- end }}
+  {{- if .Values.database.primary.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ .Values.database.primary.persistence.size | quote }}
+  {{- end }}
+{{- end }}
