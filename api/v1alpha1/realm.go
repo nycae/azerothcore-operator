@@ -29,7 +29,7 @@ type WorldServerSpec struct {
 	Resources  corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
-type AzerothRealmSpec struct {
+type RealmSpec struct {
 	RealmType   ServerType       `json:"realmType"`
 	Expansion   string           `json:"expansion"`
 	Replicas    *int32           `json:"replicas,omitempty"`
@@ -37,32 +37,32 @@ type AzerothRealmSpec struct {
 	WorldServer WorldServerSpec  `json:"worldServer,omitempty"`
 }
 
-type AzerothRealmStatus struct {
+type RealmStatus struct {
 	Ready bool `json:"ready,omitempty"`
 }
 
-type AzerothRealm struct {
+type Realm struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   AzerothRealmSpec   `json:"spec,omitempty"`
-	Status AzerothRealmStatus `json:"status,omitempty"`
+	Spec   RealmSpec   `json:"spec,omitempty"`
+	Status RealmStatus `json:"status,omitempty"`
 }
 
-type AzerothRealmList struct {
+type RealmList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []AzerothRealm `json:"items"`
+	Items           []Realm `json:"items"`
 }
 
-func (in *AzerothRealm) DeepCopyObject() runtime.Object {
+func (in *Realm) DeepCopyObject() runtime.Object {
 	return new(*in)
 }
 
-func (in *AzerothRealmList) DeepCopyObject() runtime.Object {
+func (in *RealmList) DeepCopyObject() runtime.Object {
 	out := *in
 	if in.Items != nil {
-		out.Items = make([]AzerothRealm, len(in.Items))
+		out.Items = make([]Realm, len(in.Items))
 		copy(out.Items, in.Items)
 	}
 	return &out

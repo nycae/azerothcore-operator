@@ -1,7 +1,7 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: azerothrealms.nycae.io
+  name: realms.nycae.io
 spec:
   group: nycae.io
   versions:
@@ -14,6 +14,6 @@ spec:
         x-kubernetes-preserve-unknown-fields: true
   scope: Namespaced
   names:
-    plural: azeroth-realms
-    singular: azeroth-realm
-    kind: AzerothRealm
+    plural: realms
+    singular: realm
+    kind: Realm

@@ -48,7 +48,7 @@ func (r *repo) Delete(ctx context.Context, account *v1alpha1.Account) error {
 		return fmt.Errorf("failed to delete from account_banned: %w", err)
 	}
 
-	if _, err := tx.ExecContext(ctx, "DELETE FROM account_muted WHERE id = ?", accountID); err != nil {
+	if _, err := tx.ExecContext(ctx, "DELETE FROM account_muted WHERE guid = ?", accountID); err != nil {
 		return fmt.Errorf("failed to delete from account_muted: %w", err)
 	}
 
@@ -81,7 +81,7 @@ func (r *repo) Exists(ctx context.Context, account *v1alpha1.Account) (bool, int
 }
 
 func (r *repo) Create(ctx context.Context, account *v1alpha1.Account, password string) (int64, error) {
-	username := strings.ToLower(account.Spec.Username)
+	username := strings.ToUpper(account.Spec.Username)
 	salt, verifier, err := CalculateSRP6(username, password)
 	if err != nil {
 		return 0, fmt.Errorf("failed to calculate SRP6 creds: %w", err)
@@ -94,7 +94,7 @@ func (r *repo) Create(ctx context.Context, account *v1alpha1.Account, password s
 	defer tx.Rollback()
 
 	res, err := tx.ExecContext(ctx, "INSERT INTO account (username, salt, verifier, email, expansion) VALUES (?, ?, ?, ?, ?)",
-		username, salt, verifier, account.Spec.Expansion, salt)
+		username, salt, verifier, account.Spec.Email, account.Spec.Expansion)
 	if err != nil {
 		return 0, fmt.Errorf("failed to insert account: %w", err)
 	}
@@ -105,7 +105,7 @@ func (r *repo) Create(ctx context.Context, account *v1alpha1.Account, password s
 	}
 	if account.Spec.GmLevel > 0 {
 		if _, err := tx.ExecContext(ctx, "INSERT INTO account_access (id, gmlevel, RealmID) VALUES (?, ?, -1)",
-			id, account.Spec.GmLevel, account.Spec.GmLevel); err != nil {
+			id, account.Spec.GmLevel); err != nil {
 			return 0, fmt.Errorf("failed to insert account access: %w", err)
 		}
 	}

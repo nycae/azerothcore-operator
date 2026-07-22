@@ -21,7 +21,7 @@ type Reconciler struct {
 }
 
 func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	realm := &v1alpha1.AzerothRealm{}
+	realm := &v1alpha1.Realm{}
 	if err := r.Get(ctx, req.NamespacedName, realm); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -69,7 +69,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 
 func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&v1alpha1.AzerothRealm{}).
+		For(&v1alpha1.Realm{}).
 		Owns(&appsv1.Deployment{}).
 		Complete(r)
 }

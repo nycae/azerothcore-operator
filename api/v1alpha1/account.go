@@ -6,8 +6,9 @@ import (
 )
 
 type SecretKeySelector struct {
-	Name string `json:"name"`
-	Key  string `json:"key"`
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+	Key       string `json:"key"`
 }
 
 type AccountSpec struct {
