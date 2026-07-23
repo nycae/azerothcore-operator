@@ -17,25 +17,34 @@ spec:
         app.kubernetes.io/name: authserver
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-      volumes:
-      - name: sql-files
-        emptyDir: { }
       initContainers:
+      - name: wait-for-mysql
+        image: busybox
+        command:
+        - sh
+        - -c
+        - >
+          echo "Waiting for {{ .Release.Name }}-mysql to be ready...";
+          until nc -z -w 2 {{ .Release.Name }}-mysql 3306; do
+            echo "Retry";
+            sleep 2;
+          done;
+          echo "MySQL is Ready!";
       - name: db-import
         image: "acore/ac-wotlk-db-import:master"
         imagePullPolicy: {{ .Values.authServer.image.pullPolicy }}
         env:
-        - name: AC_ROOT_PASS
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Release.Name }}-mysql-secret
-              key: mysql-root-password
-        - name: AC_LOGIN_DATABASE_INFO
-          value: "{{ .Release.Name }}-mysql;3306;root;$(AC_ROOT_PASS);acore_auth"
-        - name: AC_CHARACTER_DATABASE_INFO
-          value: "{{ .Release.Name }}-mysql;3306;root;$(AC_ROOT_PASS);acore_characters"
-        - name: AC_WORLD_DATABASE_INFO
-          value: "{{ .Release.Name }}-mysql;3306;root;$(AC_ROOT_PASS);acore_world"
+          - name: AC_ROOT_PASS
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-mysql-secret
+                key: mysql-root-password
+          - name: AC_LOGIN_DATABASE_INFO
+            value: "{{ .Release.Name }}-mysql;3306;root;$(AC_ROOT_PASS);acore_auth"
+          - name: AC_CHARACTER_DATABASE_INFO
+            value: "{{ .Release.Name }}-mysql;3306;root;$(AC_ROOT_PASS);acore_characters"
+          - name: AC_WORLD_DATABASE_INFO
+            value: "{{ .Release.Name }}-mysql;3306;root;$(AC_ROOT_PASS);acore_world"
       containers:
       - name: authserver
         image: "{{ .Values.authServer.image.repository }}:{{ .Values.authServer.image.tag }}"
@@ -54,10 +63,6 @@ spec:
               key: mysql-root-password
         - name: AC_LOGIN_DATABASE_INFO
           value: "{{ .Release.Name }}-mysql;3306;root;$(AC_ROOT_PASS);acore_auth"
-        - name: AC_CHARACTER_DATABASE_INFO
-          value: "{{ .Release.Name }}-mysql;3306;root;$(AC_ROOT_PASS);acore_characters"
-        - name: AC_WORLD_DATABASE_INFO
-          value: "{{ .Release.Name }}-mysql;3306;root;$(AC_ROOT_PASS);acore_world"
         ports:
         - containerPort: 3724
           protocol: TCP

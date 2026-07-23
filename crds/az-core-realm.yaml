@@ -1,19 +1,144 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: realms.nycae.io
+  name: realms.realm.nycae.io
 spec:
-  group: nycae.io
-  versions:
-  - name: v1alpha1
-    served: true
-    storage: true
-    schema:
-      openAPIV3Schema:
-        type: object
-        x-kubernetes-preserve-unknown-fields: true
-  scope: Namespaced
+  group: realm.nycae.io
   names:
+    kind: Realm
+    listKind: RealmList
     plural: realms
     singular: realm
-    kind: Realm
+    shortNames:
+      - rlm
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              type: object
+              required:
+                - name
+                - realmType
+                - build
+                - database
+              properties:
+                name:
+                  type: string
+                realmType:
+                  type: string
+                  enum:
+                    - pvp
+                    - pve
+                    - rp
+                    - rppvp
+                routing:
+                  type: object
+                  required:
+                    - address
+                    - localAddress
+                    - port
+                  properties:
+                    address:
+                      type: string
+                    localAddress:
+                      type: string
+                    port:
+                      type: integer
+                      format: int32
+                build:
+                  type: string
+                gmOnly:
+                  type: boolean
+                status:
+                  type: string
+                timezone:
+                  type: string
+                worldServer:
+                  type: object
+                  properties:
+                    maxPlayers:
+                      type: integer
+                      format: int32
+                    resources:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                database:
+                  type: object
+                  required:
+                    - strategy
+                  properties:
+                    strategy:
+                      type: string
+                      enum:
+                        - SelfManaged
+                        - Automatic
+                    worldDB:
+                      type: object
+                      properties:
+                        hostname:
+                          type: string
+                        port:
+                          type: integer
+                          format: int32
+                        username:
+                          type: string
+                        passwordSecretRef:
+                          type: object
+                          required:
+                            - name
+                            - key
+                          properties:
+                            name:
+                              type: string
+                            key:
+                              type: string
+                            namespace:
+                              type: string
+                        database:
+                          type: string
+                    characterDB:
+                      type: object
+                      properties:
+                        hostname:
+                          type: string
+                        port:
+                          type: integer
+                          format: int32
+                        username:
+                          type: string
+                        passwordSecretRef:
+                          type: object
+                          required:
+                            - name
+                            - key
+                          properties:
+                            name:
+                              type: string
+                            key:
+                              type: string
+                            namespace:
+                              type: string
+                        database:
+                          type: string
+            status:
+              type: object
+              properties:
+                ready:
+                  type: boolean
+                realmId:
+                  type: integer
+                  format: int64
